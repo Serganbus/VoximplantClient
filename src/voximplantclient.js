@@ -35,42 +35,59 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
      * Event fires when calling completed
      */
     this.onCallingCompletedEvent = null;
+    
+    /*
+     * Event fires when VoximplantClient::init() method will be completed
+     */
+    this.onInitializationCompletedEvent = null;
+    var self = this;
+    var tryToExecuteInitializationCompletedEventHandler = function() {
+        if (self.onInitializationCompletedEvent && typeof self.onInitializationCompletedEvent === 'function') {
+            self.onInitializationCompletedEvent();
+        }
+    };
 
     var lStatus_int = this.NOT_INTIALIZED;
     var lInstance_vx_obj = null;
     var lCall_vx_obj = null;
-
-    if (lStatus_int < this.INTIALIZED) {
-        lInstance_vx_obj = VoxImplant.getInstance();
-        var self = this;
-        lInstance_vx_obj.addEventListener(VoxImplant.Events.SDKReady, function() {
-            lStatus_int = self.INTIALIZED;
-            lInstance_vx_obj.addEventListener(VoxImplant.Events.MicAccessResult, function(e) {
-                if (e.result) {
-                    lStatus_int = self.MIC_VERIFIED;
+    
+    this.init = function () {
+        if (lStatus_int < this.INTIALIZED) {
+            lInstance_vx_obj = VoxImplant.getInstance();
+            var self = this;
+            lInstance_vx_obj.addEventListener(VoxImplant.Events.SDKReady, function() {
+                lStatus_int = self.INTIALIZED;
+                lInstance_vx_obj.addEventListener(VoxImplant.Events.MicAccessResult, function(e) {
+                    if (e.result) {
+                        lStatus_int = self.MIC_VERIFIED;
+                    } else {
+                        tryToExecuteInitializationCompletedEventHandler();
+                    }
+                });
+                if (!lInstance_vx_obj.connected()) {
+                    lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionEstablished, function() {
+                        lStatus_int = self.CONNECTED;
+                        lInstance_vx_obj.addEventListener(VoxImplant.Events.AuthResult, function(e) {
+                            if (e.result) {
+                                lStatus_int = self.LOGGED_IN;
+                            }
+                            tryToExecuteInitializationCompletedEventHandler();
+                        });
+                        lInstance_vx_obj.login(lLogin_str, lPassword_str);
+                    });
+                    lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionClosed, function() {
+                        lStatus_int = self.CONNECTION_CLOSED;
+                    });
+                    lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionFailed, function() {
+                        lStatus_int = self.CONNECTION_CLOSED;
+                        tryToExecuteInitializationCompletedEventHandler();
+                    });
+                    lInstance_vx_obj.connect();
                 }
             });
-            if (!lInstance_vx_obj.connected()) {
-                lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionEstablished, function() {
-                    lStatus_int = self.CONNECTED;
-                    lInstance_vx_obj.addEventListener(VoxImplant.Events.AuthResult, function(e) {
-                        if (e.result) {
-                            lStatus_int = self.LOGGED_IN;
-                        }
-                    });
-                    lInstance_vx_obj.login(lLogin_str, lPassword_str);
-                });
-                lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionClosed, function() {
-                    lStatus_int = self.CONNECTION_CLOSED;
-                });
-                lInstance_vx_obj.addEventListener(VoxImplant.Events.ConnectionFailed, function() {
-                    lStatus_int = self.CONNECTION_CLOSED;
-                });
-                lInstance_vx_obj.connect();
-            }
             lInstance_vx_obj.init(lOptions_obj);
-        });
-    }
+        }
+    };
     
     /*
      * get current status of VoximplantClient
