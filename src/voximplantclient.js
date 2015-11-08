@@ -1,3 +1,6 @@
+/**
+ * VoximaplantClient constructor
+ * */
 function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
     var lLogin_str = aLogin_str;
     var lPassword_str = aPassword_str;
@@ -13,20 +16,29 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
         }
     }
 
-    //Состояния объекта. Объект в любой момент времени находится в одном из перечисленных ниже состояний
-    this.NOT_INTIALIZED = 0; //Воксимплант не инициализирован
-    this.INTIALIZED = 1; //Воксимплант инициализирован
-    this.MIC_VERIFIED = 2; //Микрофон готов к работе
-    this.CONNECTED = 3; //Соединение с сервером успешно установлено
-    this.LOGGED_IN = 4; //Пройдена авторизация на сервере
-    this.CONNECTION_CLOSED = 5; //В соединении с сервером произошел сбой
-
+    /*
+     * VoximplantClient aviable statuses
+     */
+    this.NOT_INTIALIZED = 0;
+    this.INTIALIZED = 1;
+    this.MIC_VERIFIED = 2;
+    this.CONNECTED = 3;
+    this.LOGGED_IN = 4;
+    this.CONNECTION_CLOSED = 5;
+    
+    /*
+     * Event fires when calling started
+     */
     this.onCallingStartedEvent = null;
+    
+    /*
+     * Event fires when calling completed
+     */
     this.onCallingCompletedEvent = null;
 
     var lStatus_int = this.NOT_INTIALIZED;
-    var lInstance_vx_obj = null; //Объект voximplant
-    var lCall_vx_obj = null; //Объект Call
+    var lInstance_vx_obj = null;
+    var lCall_vx_obj = null;
 
     if (lStatus_int < this.INTIALIZED) {
         lInstance_vx_obj = VoxImplant.getInstance();
@@ -59,14 +71,24 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
             lInstance_vx_obj.init(lOptions_obj);
         });
     }
+    
+    /*
+     * get current status of VoximplantClient
+     */
     this.getStatus = function() {
         return lStatus_int;
     };
-
+    
+    /*
+     * checks is calling allowed
+     */
     this.isCallingAllowed = function() {
         return lStatus_int === self.LOGGED_IN;
     };
-
+    
+    /*
+     * call to number
+     */
     this.callToNumber = function(aNumber) {
         if (!this.isCallingAllowed() || lCall_vx_obj !== null) {
             return;
@@ -93,6 +115,10 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
             this.onCallingStartedEvent();
         }
     };
+    
+    /*
+     * hang up
+     */
     this.hangUp = function() {
         if (!this.isCallingAllowed() || lCall_vx_obj === null) {
             return;
