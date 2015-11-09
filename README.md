@@ -14,7 +14,7 @@ Javascript клиент для звонков через сервис [voximplan
 **Присутствует ограничение:** нельзя совершать несколько параллельных звонков из одного клиента
 
 ## Как использовать?
-### При сценарии 1
+### Сценарий 1
 При загрузке страницы инициализируем клиент, передавая логин и пароль:
 ```
 var voximplantClient = new VoximaplantClient('app_login', 'app_pw');
@@ -23,6 +23,28 @@ voximplantClient.init();
 После, звоним по номеру:
 ```
 voximplantClient.callToNumber('phone_number');
+```
+...и, когда надо, кладем трубку:
+```
+voximplantClient.hangUp();
+```
+
+### Сценарий 2
+Как было уже сказано выше, инициализировать клиент лучше перед непосредственным
+звонком. Поэтому, при загрузке страницы мы только создаем экземпляр класса клиента:
+```
+var voximplantClient = new VoximaplantClient('app_login', 'app_pw');
+```
+Потом, когда созрела необходимость звонка, небходимо добавить обработчик на окончание 
+инициализации клиента и в этом обработчике уже звонить:
+```
+voximplantClient.onInitializationCompletedEvent = function () {
+    if (voximplantClient.isCallingAllowed()) {
+        voximplantClient.callToNumber('phone_number');
+    } else {
+        alert("Инициализация не завершилась корректным результатом. Позвонить не удастся");
+    }
+}
 ```
 ...и, когда надо, кладем трубку:
 ```
