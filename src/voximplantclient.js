@@ -1,5 +1,9 @@
 /**
- * VoximaplantClient constructor
+ * @constructor
+ * @param {String} aLogin_str Логин для приложения voximplant. Обязательный параметр
+ * @param {String} aPassword_str Пароль для приложения voximplant. Обязательный параметр
+ * @param {Object} aOptOptions_obj Набор необязательных параметров, которые принимаются для метода VoxImplant.getInstance().init(). Список параметров тут: http://voximplant.com/docs/references/websdk/VoxImplant.Config.html
+ * 
  * */
 function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
     var lLogin_str = aLogin_str;
@@ -16,28 +20,50 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
         }
     }
 
-    /*
-     * VoximplantClient aviable statuses
+    /**
+     * Статус, указывающий, что VoximaplantClient еще не выполнял метод init()
      */
     this.NOT_INTIALIZED = 0;
+	
+	/**
+     * Статус, указывающий, что VoximaplantClient уже выполнил метод init()
+     */
     this.INTIALIZED = 1;
+	
+	/**
+     * Статус, указывающий, что у пользователя доступен микрофон. Если микрофон не доступен, статус будет INTIALIZED
+     */
     this.MIC_VERIFIED = 2;
+	
+	/**
+     * Статус, указывающий, что клиент подключился к серверу voximplant. Если по каким-то причинам подключиться не удалось, статус будет: MIC_VERIFIED
+     */
     this.CONNECTED = 3;
+	
+	/**
+     * Статус, указывающий, что клиент успешно авторизовался на сервере voximplant. 
+	 * Если по каким-то причинам авторизоваться не удалось, статус будет: CONNECTED
+	 * Единственный статус, при котором возможно совершать звонки
+     */
     this.LOGGED_IN = 4;
+	
+	/**
+     * Статус, указывающий, что у клиента подключился к серверу voximplant, но по каким-то причинам подключение разорвалось.
+     */
     this.CONNECTION_CLOSED = 5;
     
-    /*
-     * Event fires when calling started
+    /**
+     * При начале обработки звонка воксимплантом, обрабатывается эта функция, если ей присвоили значение
      */
     this.onCallingStartedEvent = null;
     
-    /*
-     * Event fires when calling completed
+    /**
+     * При завершении звонка, обрабатывается эта функция, если ей присвоили значение
      */
     this.onCallingCompletedEvent = null;
     
-    /*
-     * Event fires when VoximplantClient::init() method will be completed
+    /**
+     * При окончании работы функции VoximplantClient::init(), обрабатывается эта функция, если ей присвоили значение
      */
     this.onInitializationCompletedEvent = null;
     var self = this;
@@ -89,22 +115,27 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
         }
     };
     
-    /*
-     * get current status of VoximplantClient
+    /**
+     * Получить текущий статус VoximplantClient. 
+	 * Доступные статусы: NOT_INTIALIZED, INTIALIZED, MIC_VERIFIED, CONNECTED, LOGGED_IN, CONNECTION_CLOSED
+	 * @return {Integer}
      */
     this.getStatus = function() {
         return lStatus_int;
     };
     
-    /*
-     * checks is calling allowed
+    /**
+     * Проверяем, разрешен ли звонок
+	 * @return {Boolean}
      */
     this.isCallingAllowed = function() {
         return lStatus_int === self.LOGGED_IN;
     };
     
-    /*
-     * call to number
+    /**
+     * Звоним на номер
+	 * 
+	 * @param{String} aNumber телефонный номер на который звоним
      */
     this.callToNumber = function(aNumber) {
         if (!this.isCallingAllowed() || lCall_vx_obj !== null) {
@@ -133,8 +164,8 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
         }
     };
     
-    /*
-     * hang up
+    /**
+     * Завершить звонок
      */
     this.hangUp = function() {
         if (!this.isCallingAllowed() || lCall_vx_obj === null) {
