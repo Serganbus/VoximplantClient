@@ -50,3 +50,29 @@ voximplantClient.onInitializationCompletedEvent = function () {
 ```
 voximplantClient.hangUp();
 ```
+
+### Улучшаем отказоустойчивость
+В текущей реализации может произойти такая ситуация: мы соединились с серовером voximplant, но, по каким-то причинам, вскоре соединение прекратилось. В этом случае наш клиент не даст позвонить пользователю, но можно указать по какой причине. Это делается с помощью такого кода:
+```
+if (voximplantClient.isCallingAllowed()) {
+		voximplantClient.callToNumber(callingNumber);
+	} else {
+		var msg_text = '';
+		var voximplantStatus = voximplantClient.getStatus();
+		switch (voximplantStatus) {
+			case voximplantClient.INTIALIZED:
+				msg_text = 'Не удается сделать звонок. Нет доступа к микрофону';
+				break;
+			case voximplantClient.MIC_VERIFIED:
+				msg_text = 'Не удается сделать звонок. Нет соединения с сервером voximplant';
+				break;
+			case voximplantClient.CONNECTED:
+				msg_text = 'Не удается сделать звонок. Не удалось авторизоваться на сервере voximplant';
+				break;
+			case voximplantClient.CONNECTION_CLOSED:
+				msg_text = 'Не удается сделать звонок. Соединение с сервером voximplant закрыто. Пожалуйста, перезайдите в панель администратора и попробуйте снова.';
+				break;
+		}
+		alert(msg_text);
+	}
+```
