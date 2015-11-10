@@ -117,9 +117,9 @@ function VoximaplantClient(aLogin_str, aPassword_str, aOptOptions_obj) {
             lCall_vx_obj.removeEventListener(VoxImplant.CallEvents.Failed, closeCallFunc);
             lCall_vx_obj.removeEventListener(VoxImplant.CallEvents.Disconnected, closeCallFunc);
             if (lCall_vx_obj.state() !== 'ENDED') {
-                llCall_vx_obj.hangup();
+                lCall_vx_obj.hangup();
             }
-            llCall_vx_obj = null;
+            lCall_vx_obj = null;
 
             if (self.onCallingCompletedEvent && typeof self.onCallingCompletedEvent === 'function') {
                 self.onCallingCompletedEvent();
